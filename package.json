@@ -1,0 +1,19 @@
+{
+  "name": "FeedBackBot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cos404",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "mongoose": "^5.9.27",
+    "node-telegram-bot-api": "^0.50.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.6.0"
+  }
+}
