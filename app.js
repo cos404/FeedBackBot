@@ -21,6 +21,7 @@ bot.on('message', async msg => {
 
 bot.onText(/\/start/, msg => {
   const { id: userId, username, first_name: firstname, language_code: language } = msg.from;
+  const text = 'В данный момент Вы не анонимны и администраторы канала будут знать от кого сообщение. Если вам не нужен ответ и вы хотите сохранить анонимность нажмите на /anonymous.'
   createUser(userId, username, firstname, language);
   bot.sendMessage(userId, text, { parse_mode: 'Markdown' })
   .catch(err => error('tg', err));
