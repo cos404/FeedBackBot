@@ -19,6 +19,19 @@ bot.on('message', async msg => {
   handleMsg(msg, user);
 });
 
+bot.on('channel_post', async msg => {
+  const { reply_to_message, text } = msg;
+
+  if(config.telegram.feedback != msg.chat.id) return;
+  if(!reply_to_message) return;
+  if(!reply_to_message.forward_from) return;
+
+  if(reply_to_message.forward_from.id) {
+    replyToUser(reply_to_message.forward_from.id, text)
+  }
+
+});
+
 bot.onText(/\/start/, msg => {
   const { id: userId, username, first_name: firstname, language_code: language } = msg.from;
   const text = 'В данный момент Вы не анонимны и администраторы канала будут знать от кого сообщение. Если вам не нужен ответ и вы хотите сохранить анонимность нажмите на /anonymous.'
@@ -51,6 +64,8 @@ const createUser = async(userId, username, firstname, language) => {
   }).catch(err => error('mongo', err, { userId }));
 }
 
+
+const replyToUser = async(userId, message) => bot.sendMessage(userId, message);
 const isPrivate = msg => msg.chat.type === 'private';
 const getCommand = msg => msg.text.match(/^\/([a-zA-Z]+)/);
 const setMediaGroup = (text, media_group_id) => {
