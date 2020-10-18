@@ -1,2 +1,3 @@
 const User = require('./user.js');
-module.exports = { User };
+const Message = require('./message.js');
+module.exports = { User, Message };

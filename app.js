@@ -3,7 +3,7 @@ require('dotenv').config();
 const config = require('./config');
 const bot = require('./lib/bot');
 const error = require('./lib/errors_handler');
-const { User } = require('./models/index');
+const { User, Message } = require('./models/index');
 const tags = {
   bold: 'b',
   italic: 'i',
@@ -27,6 +27,7 @@ bot.on('channel_post', async msg => {
   if(!reply_to_message.forward_from) return;
 
   if(reply_to_message.forward_from.id) {
+    console.log(msg)
     replyToUser(reply_to_message.forward_from.id, text)
   }
 
@@ -64,6 +65,13 @@ const createUser = async(userId, username, firstname, language) => {
   }).catch(err => error('mongo', err, { userId }));
 }
 
+const saveMessage = async(message_id, userId) => {
+  let message = new Message({userId, messageId: message_id});
+  await message.save()
+  .then(data => {
+    if(data) return data;
+  }).catch(err => error('mongo', err, { userId }));
+}
 
 const replyToUser = async(userId, message) => bot.sendMessage(userId, message);
 const isPrivate = msg => msg.chat.type === 'private';
@@ -96,11 +104,14 @@ const textToMarkdown = (text, entities) => {
 
 const handleMsg = (msg, user) => {
   if(user.anonymous) anonymousMsg(msg);
-  else notAnonymousMsg(msg);
+  else notAnonymousMsg(msg, user);
 };
 
-const notAnonymousMsg = msg => {
-  bot.forwardMessage(config.telegram.feedback, msg.chat.id, msg.message_id);
+const notAnonymousMsg = (msg, user) => {
+  bot.forwardMessage(config.telegram.feedback, msg.chat.id, msg.message_id)
+  .then(msg => {
+    saveMessage(msg.message_id, user.userId);
+  })
 };
 
 const anonymousMsg = msg => {
