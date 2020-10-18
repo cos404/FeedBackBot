@@ -5,9 +5,13 @@ const messageSchema = new Schema({
   userId: {
     type: Number,
     required: true,
-    unique: true,
   },
   messageId: {
+    type: Number,
+    required: true,
+    unique: true,
+  },
+  botMessageId: {
     type: Number,
     required: true,
     unique: true,

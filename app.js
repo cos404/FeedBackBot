@@ -24,13 +24,14 @@ bot.on('channel_post', async msg => {
 
   if(config.telegram.feedback != msg.chat.id) return;
   if(!reply_to_message) return;
-  if(!reply_to_message.forward_from) return;
-
-  if(reply_to_message.forward_from.id) {
-    console.log(msg)
-    replyToUser(reply_to_message.forward_from.id, text)
+  if(reply_to_message.forward_from || reply_to_message.forward_sender_name) {
+    const messageId = reply_to_message.message_id;
+    Message.findOne({ messageId })
+    .then(message => {
+      replyToUser(message.userId, message.botMessageId, text)
+    })
+    .catch(err => error('mongo', err));
   }
-
 });
 
 bot.onText(/\/start/, msg => {
@@ -65,15 +66,18 @@ const createUser = async(userId, username, firstname, language) => {
   }).catch(err => error('mongo', err, { userId }));
 }
 
-const saveMessage = async(message_id, userId) => {
-  let message = new Message({userId, messageId: message_id});
+const saveMessage = async(messageId, userId, botMessageId) => {
+  let message = new Message({userId, messageId, botMessageId});
   await message.save()
   .then(data => {
     if(data) return data;
   }).catch(err => error('mongo', err, { userId }));
 }
 
-const replyToUser = async(userId, message) => bot.sendMessage(userId, message);
+const replyToUser = async(userId, botMsgId, message) => bot
+  .sendMessage(userId, message, {reply_to_message_id: botMsgId })
+  .catch(err => error('tg', err));
+
 const isPrivate = msg => msg.chat.type === 'private';
 const getCommand = msg => msg.text.match(/^\/([a-zA-Z]+)/);
 const setMediaGroup = (text, media_group_id) => {
@@ -109,8 +113,8 @@ const handleMsg = (msg, user) => {
 
 const notAnonymousMsg = (msg, user) => {
   bot.forwardMessage(config.telegram.feedback, msg.chat.id, msg.message_id)
-  .then(msg => {
-    saveMessage(msg.message_id, user.userId);
+  .then(message => {
+    saveMessage(message.message_id, user.userId, msg.message_id);
   })
 };
 
