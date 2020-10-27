@@ -113,13 +113,13 @@ const textToMarkdown = (text, entities) => {
 
 const handleMsg = (msg, user) => {
   if(user.anonymous) anonymousMsg(msg);
-  else notAnonymousMsg(msg, user);
+  else notAnonymousMsg(msg);
 };
 
-const notAnonymousMsg = (msg, user) => {
+const notAnonymousMsg = (msg) => {
   bot.forwardMessage(config.telegram.feedback, msg.chat.id, msg.message_id)
   .then(message => {
-    saveMessage(message.message_id, user.userId, msg.message_id);
+    saveMessage(message.message_id, msg.from.id, msg.message_id);
   })
 };
 
