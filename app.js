@@ -75,8 +75,13 @@ const saveMessage = async(messageId, userId, botMessageId) => {
 }
 
 const replyToUser = async(userId, botMsgId, message) => bot
-  .sendMessage(userId, message, {reply_to_message_id: botMsgId })
-  .catch(err => error('tg', err));
+  .sendMessage(userId, message, { reply_to_message_id: botMsgId })
+  .catch(err => {
+    if(err.response.body.error_code == 400) {
+      bot.sendMessage(userId, message);
+    }
+    else error('tg', err)
+  });
 
 const isPrivate = msg => msg.chat.type === 'private';
 const getCommand = msg => msg.text.match(/^\/([a-zA-Z]+)/);
